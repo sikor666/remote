@@ -16,98 +16,6 @@ import ptstypes
 log = logging.debug
 
 
-class MmiParser(object):
-    """"Interface to parsing arguments from description of MMI
-
-    It is assumed that all arguments in description are enclosed in single
-    quotes.
-
-    """
-
-    min_arg = 1
-    # hopefully this is the max number of arguments in MMI description
-    max_arg = 10
-
-    arg_name_prefix = "arg_"
-    arg_value_prefix = "MMI_arg_value_"
-
-    def __init__(self):
-        """Constructor of the parser"""
-
-        # pattern used to search for args in MMI description
-        self.pattern = re.compile(r"(?:'|=\s+)([0-9-xA-Fa-f]+)")
-
-        # list of the parsed argument values from MMI description
-        self.args = []
-
-        # create attributes to reference the args
-        for i in range(self.min_arg, self.max_arg):
-            index = str(i)
-            mmi_arg_name = self.arg_name_prefix + index
-            mmi_arg_value = self.arg_value_prefix + index
-            setattr(self, mmi_arg_name, mmi_arg_value)
-
-    def parse_description(self, description):
-        """Parse PTS MMI description text for argument values.
-
-        It is necessary to do it for now, but in future PTS will provide API to
-        get the values
-
-        An example of MMI that requires parsing is listed below. For that MMI
-        00D3 should be converted to hexadecimal 0xD3 and size to int 45
-
-        project_name: GATT
-        wid: 69
-        test_case_name: TC_GAC_CL_BV_01_C
-
-        Please send prepare write request with handle = '00D3'O and size = '45'
-        to the PTS.
-
-        Description: Verify that the Implementation Under Test (IUT) can send
-        data according to negotiate MTU size."
-
-        """
-        log("%s %r", self.parse_description.__name__, description)
-
-        self.args = self.pattern.findall(description)
-
-        log("Parse result: %r", self.args)
-
-    def reset(self):
-        """Resets the args
-
-        To be used when parsed values are not needed anymore
-
-        """
-        self.args = []
-
-    def process_args(self, args):
-        """Replaces the MMI keywords arguments (e.g. MMI.arg_1) with the
-        respective argument values from MMI description
-
-        """
-        log("%s: %s", self.process_args.__name__, args)
-        log("MMI.args now %r", self.args)
-
-        args_list = list(args)
-
-        for arg_index, arg in enumerate(args):
-            if not isinstance(arg, basestring):  # omit not strings
-                continue
-
-            if arg.startswith(MMI.arg_value_prefix):
-                mmi_index = int(arg[arg.rfind("_") + 1:])
-
-                args_list[arg_index] = self.args[mmi_index - 1]
-
-        out_args = tuple(args_list)
-        log("returning %r", out_args)
-        return out_args
-
-
-MMI = MmiParser()
-
-
 class AbstractMethodException(Exception):
     """Exception raised if an abstract method is called."""
     pass
@@ -181,8 +89,7 @@ class TestCase(PTSCallback):
         self.log_filename = os.path.join(test_log_dir, timestamp_name + ".log")
 
     def log(self, log_type, logtype_string, log_time, log_message):
-        """Overrides PTSCallback method. Handles
-        PTSControl.IPTSControlClientLogger.Log"""
+        """Overrides PTSCallback method. Handles PTSControl.IPTSControlClientLogger.Log"""
 
         new_status = None
 
