@@ -63,7 +63,7 @@ def set_pixits(pts):
     pts.set_pixit("PBAP", "TSPX_l2cap_psm", "1005")
     pts.set_pixit("PBAP", "TSPX_rfcomm_channel", "2")
     pts.set_pixit("PBAP", "TSPX_no_confirmations", "FALSE")
-    pts.set_pixit("PBAP", "TSPX_Automation", "TRUE")
+    pts.set_pixit("PBAP", "TSPX_Automation", "FALSE")
     pts.set_pixit("PBAP", "TSPX_search_criteria", "PTS")
     pts.set_pixit("PBAP", "TSPX_PullVCardEntry_invalid_value", "F1984D696B612048C3A46B6B696E656E")
 

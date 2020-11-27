@@ -45,13 +45,14 @@ def main():
     stack_inst = stack.get_stack()
     stack_inst.synch_init([pts.callback_thread for pts in ptses])
 
-    autoprojects.gap.set_pixits(ptses[0])
-    autoprojects.sm.set_pixits(ptses[0])
+    # autoprojects.gap.set_pixits(ptses[0])
+    # autoprojects.sm.set_pixits(ptses[0])
     autoprojects.pbap.set_pixits(ptses[0])
 
-    test_cases = autoprojects.gap.test_cases(ptses[0])
-    test_cases += autoprojects.sm.test_cases(ptses[0])
-    test_cases += autoprojects.pbap.test_cases(ptses[0])
+    # test_cases = autoprojects.gap.test_cases(ptses[0])
+    # test_cases += autoprojects.sm.test_cases(ptses[0])
+    # test_cases += autoprojects.pbap.test_cases(ptses[0])
+    test_cases = autoprojects.pbap.test_cases(ptses[0])
 
     autoptsclient.run_test_cases(ptses, test_cases, args)
 
