@@ -56,27 +56,6 @@ PTS_LOGTYPE_STRING = [
     "PTS_LOGTYPE_EVENT_SUMMARY"
 ]
 
-"""PTS MMI styles"""
-MMI_Style_Ok_Cancel1     = 0x11041
-MMI_Style_Ok_Cancel2     = 0x11141
-MMI_Style_Ok             = 0x11040
-MMI_Style_Yes_No1        = 0x11044
-MMI_Style_Yes_No_Cancel1 = 0x11043
-MMI_Style_Abort_Retry1   = 0x11042
-MMI_Style_Edit1          = 0x12040
-MMI_Style_Edit2          = 0x12140
-
-MMI_STYLE_STRING = {
-    MMI_Style_Ok_Cancel1     : "MMI_Style_Ok_Cancel1",
-    MMI_Style_Ok_Cancel2     : "MMI_Style_Ok_Cancel2",
-    MMI_Style_Ok             : "MMI_Style_Ok",
-    MMI_Style_Yes_No1        : "MMI_Style_Yes_No1",
-    MMI_Style_Yes_No_Cancel1 : "MMI_Style_Yes_No_Cancel1",
-    MMI_Style_Abort_Retry1   : "MMI_Style_Abort_Retry1",
-    MMI_Style_Edit1          : "MMI_Style_Edit1",
-    MMI_Style_Edit2          : "MMI_Style_Edit2"
-}
-
 PTSCONTROL_E_GUI_UPDATE_FAILED                           = 0x849C0001
 PTSCONTROL_E_PTS_FILE_FAILED_TO_INITIALIZE               = 0x849C0002
 PTSCONTROL_E_FAILED_TO_CREATE_WORKSPACE                  = 0x849C0003
