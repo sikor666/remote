@@ -6,7 +6,7 @@ import os
 import sys
 
 import autoptsclient_common as autoptsclient
-import ptsprojects.bluez as autoprojects
+import ptsprojects.bluetoothservice as autoprojects
 
 
 def parse_args():

@@ -2,14 +2,14 @@
 
 try:
     from ptsprojects.testcase import TestCase
-    from ptsprojects.bluez.btestcase import BTestCase
+    from ptsprojects.bluetoothservice.btestcase import BTestCase
 
 except ImportError:  # running this module as script
     import sys
     sys.path.append("../..")  # to be able to locate the following imports
 
     from ptsprojects.testcase import TestCase
-    from ptsprojects.bluez.btestcase import BTestCase
+    from ptsprojects.bluetoothservice.btestcase import BTestCase
 
 from time import sleep
 import binascii
