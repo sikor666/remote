@@ -16,7 +16,7 @@
 """Test case that manages Zephyr IUT"""
 
 from ptsprojects.testcase import TestCaseLT1, TestCaseLT2, TestFunc, TestFuncCleanUp
-from ptsprojects.stack import get_stack
+# from ptsprojects.stack import get_stack
 # from ptsprojects.bluez.iutctl import get_iut
 
 class BTestCase(TestCaseLT1):
@@ -27,14 +27,14 @@ class BTestCase(TestCaseLT1):
 
         super(BTestCase, self).__init__(*args, ptsproject_name="bluez", **kwargs)
 
-        self.stack = get_stack()
+        # self.stack = get_stack()
         # self.bluezctrl = get_iut()
 
         # first command is to start bluez btpclient
         # self.cmds.insert(0, TestFunc(self.bluezctrl.start))
         # self.cmds.insert(1, TestFunc(self.bluezctrl.wait_iut_ready_event))
 
-        self.cmds.append(TestFuncCleanUp(self.stack.cleanup))
+        # self.cmds.append(TestFuncCleanUp(self.stack.cleanup))
         # last command is to stop bluez btpclient
         # self.cmds.append(TestFuncCleanUp(self.bluezctrl.stop))
 

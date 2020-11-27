@@ -4,11 +4,11 @@
 
 import os
 import sys
-from distutils.spawn import find_executable
+# from distutils.spawn import find_executable
 
 import autoptsclient_common as autoptsclient
 import ptsprojects.bluez as autoprojects
-import ptsprojects.stack as stack
+# import ptsprojects.stack as stack
 # from pybtp import btp
 # from ptsprojects.bluez.iutctl import get_iut
 
@@ -41,9 +41,9 @@ def main():
     # autoprojects.iutctl.AUTO_PTS_LOCAL = autoptsclient.AUTO_PTS_LOCAL
     # autoprojects.iutctl.init(args.btpclient_path)
 
-    stack.init_stack()
-    stack_inst = stack.get_stack()
-    stack_inst.synch_init([pts.callback_thread for pts in ptses])
+    # stack.init_stack()
+    # stack_inst = stack.get_stack()
+    # stack_inst.synch_init([pts.callback_thread for pts in ptses])
 
     # autoprojects.gap.set_pixits(ptses[0])
     # autoprojects.sm.set_pixits(ptses[0])
