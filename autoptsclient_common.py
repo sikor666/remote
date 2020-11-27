@@ -35,7 +35,6 @@ from termcolor import colored
 
 from ptsprojects.testcase import PTSCallback, TestCaseLT1, TestCaseLT2
 from ptsprojects.testcase_db import TestCaseTable
-from pybtp.types import BTPError, SynchError
 import ptsprojects.ptstypes as ptstypes
 from config import SERVER_PORT, CLIENT_PORT
 
@@ -678,13 +677,7 @@ def get_error_code(exc):
     """Return string error code for argument exception"""
     error_code = None
 
-    if isinstance(exc, BTPError):
-        error_code = ptstypes.E_BTP_ERROR
-
-    elif isinstance(exc, socket.timeout):
-        error_code = ptstypes.E_BTP_TIMEOUT
-
-    elif isinstance(exc, xmlrpclib.Fault):
+    if isinstance(exc, xmlrpclib.Fault):
         error_code = ptstypes.E_XML_RPC_ERROR
 
     elif error_code is None:
@@ -694,26 +687,6 @@ def get_error_code(exc):
         get_error_code.__name__, error_code, exc)
 
     return error_code
-
-
-def synchronize_instances(state, break_state=None):
-    """Synchronize instances to be in one state before executing further"""
-    match = False
-
-    while True:
-        time.sleep(1)
-        match = True
-
-        for tc in RUNNING_TEST_CASE.itervalues():
-            if tc.state != state:
-                if break_state and tc.state in break_state:
-                    raise SynchError
-
-                match = False
-                continue
-
-        if match:
-            return
 
 
 def run_test_case_thread_entry(pts, test_case):
@@ -727,8 +700,7 @@ def run_test_case_thread_entry(pts, test_case):
         test_case)
 
     if AUTO_PTS_LOCAL:  # set fake status and return
-        statuses = ["PASS", "INCONC", "FAIL", "UNKNOWN VERDICT: NONE",
-                    "BTP ERROR", "XML-RPC ERROR", "BTP TIMEOUT"]
+        statuses = ["PASS", "INCONC", "FAIL", "UNKNOWN VERDICT: NONE", "XML-RPC ERROR"]
         test_case.status = random.choice(statuses)
         return
 
@@ -741,7 +713,6 @@ def run_test_case_thread_entry(pts, test_case):
         test_case.status = "RUNNING"
         test_case.state = "RUNNING"
         pts.callback_thread.set_current_test_case(test_case.name)
-        synchronize_instances(test_case.state)
         error_code = pts.run_test_case(test_case.project_name, test_case.name)
 
         log("After run_test_case error_code=%r status=%r",
@@ -767,7 +738,6 @@ def run_test_case_thread_entry(pts, test_case):
         if error_code == ptstypes.E_XML_RPC_ERROR:
             pts.recover_pts()
         test_case.state = "FINISHING"
-        synchronize_instances(test_case.state)
         test_case.post_run(error_code)  # stop qemu and other commands
         del RUNNING_TEST_CASE[test_case.name]
 
