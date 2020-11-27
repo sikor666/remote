@@ -50,18 +50,6 @@ RUNNING_TEST_CASE = {}
 # not be contacted.
 AUTO_PTS_LOCAL = "AUTO_PTS_LOCAL" in os.environ
 
-# xmlrpclib._Method patched to get __repr__ and __str__
-#
-# This is used to log and print xmlrpclib.ServerProxy methods. Without this
-# patch TestCase with xmlrpc TestFunc, e.g. pts.update_pixit_param, will cause
-# traceback:
-#
-# Fault: <Fault 1: '<type \'exceptions.Exception\'>:method
-# "update_pixit_param.__str__" is not supported'>
-#
-# To be used till this fix is backported to python 2.7
-# https://bugs.python.org/issue1690840
-
 
 class _Method:
     # some magic to bind an XML-RPC method to an RPC server.
@@ -647,8 +635,6 @@ def run_test_case_thread_entry(pts, test_case):
 
     try:
         RUNNING_TEST_CASE[test_case.name] = test_case
-        test_case.state = "PRE_RUN"
-        test_case.pre_run()
         test_case.status = "RUNNING"
         test_case.state = "RUNNING"
         pts.callback_thread.set_current_test_case(test_case.name)
@@ -677,11 +663,9 @@ def run_test_case_thread_entry(pts, test_case):
         if error_code == ptstypes.E_XML_RPC_ERROR:
             pts.recover_pts()
         test_case.state = "FINISHING"
-        test_case.post_run(error_code)  # stop qemu and other commands
         del RUNNING_TEST_CASE[test_case.name]
 
-    log("Done TestCase %s %s", run_test_case_thread_entry.__name__,
-        test_case)
+    log("Done TestCase %s %s", run_test_case_thread_entry.__name__, test_case)
 
 
 @run_test_case_wrapper

@@ -125,117 +125,6 @@ class MmiParser(object):
 MMI = MmiParser()
 
 
-class TestFunc:
-    """A wrapper around test functions"""
-
-    def __init__(self, func, *args, **kwds):
-        """Constructor of TestFunc
-
-        MMI.arg_X -- Passing these keywords in args would enable parsing the
-                     description of PTS MMI for values. Each of the keywords
-                     has the value of the description. For example: for
-                     description "Please send prepare write request with handle
-                     = '00D3'O and size = '45' to the PTS" MMI.arg_1 will have
-                     the value 0xD3 and MMI.arg_2 will have the value 45
-
-        start_wid -- wid to start TestFunc
-
-        stop_wid -- not used by TestFunc, because function stopping is not easy
-                    to implement.
-
-        post_wid -- start TestFunc on the next MMI after MMI with this wid
-
-        skip_call -- a tuple of integers of func call numbers to skip.
-                     Starting from one so first call is 1.
-
-        start_wid and stop_wid must be passed in as keyword arguments. This is
-        because all other arguments will be passed to the func. For example:
-
-        TestFunc(my_function, arg1, arg2, kwd1=5, start_wid=117)
-
-        """
-        self.func = func
-        self.__set_attrs(kwds)
-        self.args = args
-        self.kwds = kwds
-
-        self.call_count = 0  # number of times func is run
-
-        # true if parsing of MMI description text is needed by this test func
-        self.desc_parsing_needed = False
-
-        for arg in args:
-            if isinstance(arg, str) and arg.startswith(MMI.arg_value_prefix):
-                self.desc_parsing_needed = True
-                break
-
-    def __set_attrs(self, kwds):
-        """Read attributes from arbitrary keyword argument dictionary.
-
-        Attributes are not specified in the constructor as normal arguments
-        cause they are not always used and when not used they would be
-        consuming function (func) arguments (args).
-
-        These attributes are used by this class and not passed to the func,
-        hence they are removed from kwds.
-
-        Note: since functions cannot be stopped, stop_wid is useless.
-
-        kwds -- arbitrary keyword argument dictionary
-
-        """
-        attr_names = ["start_wid", "stop_wid", "post_wid", "skip_call"]
-
-        for attr_name in attr_names:
-            if attr_name in kwds:
-                attr_value = kwds.pop(attr_name)
-            else:
-                attr_value = None
-
-            setattr(self, attr_name, attr_value)
-
-    def start(self):
-        """Starts the function"""
-        self.call_count += 1
-        log("Starting test function: %s" % str(self))
-
-        if isinstance(self.skip_call, tuple):  # is None if not set
-            if self.call_count in self.skip_call:
-                log("Skipping starting test function")
-                return
-
-        if self.desc_parsing_needed:
-            args = MMI.process_args(self.args)
-        else:
-            args = self.args
-
-        log("Test function parameters: args=%r, kwds=%r", args, self.kwds)
-
-        self.func(*args, **self.kwds)
-
-    def stop(self):
-        """Does nothing, since not easy job to stop a function"""
-        pass
-
-    def __str__(self):
-        """Returns string representation"""
-        return ("class=%s, func=%s start_wid=%s stop_wid=%s post_wid=%s "
-                "skip_call=%s call_count=%s args=%s kwds=%s" %
-                (self.__class__, self.func, self.start_wid, self.stop_wid,
-                 self.post_wid, self.skip_call, self.call_count, self.args,
-                 self.kwds))
-
-
-class TestFuncCleanUp(TestFunc):
-    """Clean-up function that is invoked after running test case in PTS."""
-    pass
-
-
-def is_cleanup_func(func):
-    """'Retruns True if func is an in an instance of TestFuncCleanUp"""
-    return isinstance(func, TestFuncCleanUp)
-
-
 class AbstractMethodException(Exception):
     """Exception raised if an abstract method is called."""
     pass
@@ -289,28 +178,18 @@ class TestCase(PTSCallback):
         return TestCase(self.project_name, self.name, self.cmds,
                         self.ptsproject_name, self.log_filename, self.log_dir)
 
-    def __init__(self, project_name, test_case_name, cmds=[],
+    def __init__(self, project_name, test_case_name,
                  ptsproject_name=None, log_filename=None, log_dir=None):
-        """TestCase constructor
+        """TestCase constructor"""
 
-        cmds -- a list of TestFunc or single instance of them
-
-        """
         self.project_name = project_name
         self.name = test_case_name
         # a.k.a. final verdict
         self.status = "init"
         self.state = None
 
-        if isinstance(cmds, list):
-            self.cmds = list(cmds)
-        else:
-            self.cmds = [cmds]
-
         self.thread_exception = Queue.Queue()
         self.ptsproject_name = ptsproject_name
-        self.tc_subproc = None
-        self.lf_subproc = None
         self.log_filename = log_filename
         self.log_dir = log_dir
 
@@ -366,137 +245,6 @@ class TestCase(PTSCallback):
         if new_status:
             self.status = new_status
             log("New status %s - %s", str(self), new_status)
-
-    def on_implicit_send(self, project_name, wid, test_case_name, description,
-                         style):
-        """Overrides PTSCallback method. Handles
-        PTSControl.IPTSImplicitSendCallbackEx.OnImplicitSend"""
-        log("%s %s", self, self.on_implicit_send.__name__)
-
-        self.join_post_wid_thread()
-
-        # this should never happen, pts does not run tests in parallel
-        # TODO - This is a temporary solution for PTS bug #14711
-        # assert project_name == self.project_name, \
-        #   "Unexpected project name %r should be %r" % \
-        #    (project_name, self.project_name)
-
-        # assert test_case_name == self.name, \
-        #     "Unexpected test case name %r should be %r" % \
-        #     (test_case_name, self.name)
-
-        my_response = ""
-
-        # start/stop command if triggered by wid
-        self.start_stop_cmds_by_wid(wid, description)
-
-        if self.generic_wid_hdl is not None:
-            my_response = self.handle_mmi_generic(wid, description, style,
-                                                  test_case_name)
-        else:
-            if style == ptstypes.MMI_Style_Yes_No1:
-                my_response = self.handle_mmi_style_yes_no1(wid, description)
-
-            elif style == ptstypes.MMI_Style_Edit1:
-                my_response = self.handle_mmi_style_edit1(wid, description)
-
-            # actually style == MMI_Style_Ok_Cancel2
-            else:
-                my_response = self.handle_mmi_style_ok_cancel(wid, description)
-
-        # if there are post wid TestFunc waiting run those in separate
-        # thread
-        if len(self.post_wid_queue):
-            log("Running post_wid test functions")
-            self.post_wid_thread = Thread(None, self.run_post_wid_cmds)
-            self.post_wid_thread.start()
-
-        log("Sending response %r", my_response)
-        return my_response
-
-    def pre_run(self):
-        """Method called before test case is run in PTS"""
-        log("%s %s %s" % (self.pre_run.__name__, self.project_name, self.name))
-
-        log("About to run test case %s %s with commands:" %
-            (self.project_name, self.name))
-        for index, cmd in enumerate(self.cmds):
-            log("%d) %s", index, cmd)
-
-        subproc_dir = (os.path.dirname(os.path.realpath(__file__)) + "/" +
-                       self.ptsproject_name + "/")
-        subproc_path = subproc_dir + "pre_tc.py"
-
-        if os.path.exists(subproc_path):
-            log("%s, run pre test case script" % self.post_run.__name__)
-            self.lf_subproc = open(subproc_dir + "sp_pre_stdout.log", "w")
-            subproc_cmd = " ".join(
-                [subproc_path, self.project_name, self.name])
-            self.tc_subproc = subprocess.Popen(shlex.split(subproc_cmd),
-                                               shell=False,
-                                               stdin=subprocess.PIPE,
-                                               stdout=self.lf_subproc,
-                                               stderr=self.lf_subproc)
-
-        # start commands that don't have start trigger (lack start_wid or
-        # post_wid) and are not cleanup functions
-        for cmd in self.cmds:
-            if cmd.start_wid is None and cmd.post_wid is None and \
-               not is_cleanup_func(cmd):
-                cmd.start()
-
-    def post_run(self, error_code):
-        """Method called after test case is run in PTS
-
-        error_code -- String code of an error that occured during test run
-        """
-        log("%s %s %s %s" % (self.post_run.__name__, self.project_name,
-                             self.name, error_code))
-
-        if error_code in ptstypes.PTSCONTROL_E_STRING.values():
-            self.status = error_code
-
-        elif error_code:
-            raise Exception("Unknown error code %r!" % error_code)
-
-        # run the clean-up commands
-        for cmd in self.cmds:
-            if is_cleanup_func(cmd):
-                cmd.start()
-
-        # in accordance with PTSControlClient.cpp:
-        # // Allow device to settle down
-        # Sleep(3000);
-        # otherwise 4th test case just blocks eternally
-        time.sleep(3)
-
-        for cmd in self.cmds:
-            cmd.stop()
-
-        # Cleanup pre created subproc
-        if self.tc_subproc is not None:
-            log("%s, cleanup running pre test case script" %
-                self.post_run.__name__)
-            self.tc_subproc.communicate(input='#close\n')
-            self.lf_subproc.close()
-
-        subproc_dir = (os.path.dirname(os.path.realpath(__file__)) + "/" +
-                       self.ptsproject_name + "/")
-        subproc_path = subproc_dir + "post_tc.py"
-
-        if os.path.exists(subproc_path):
-            log("%s, run post test case script" % self.post_run.__name__)
-            self.lf_subproc = open(subproc_dir + "sp_post_stdout.log", "w")
-            subproc_cmd = " ".join(
-                [subproc_path, self.project_name, self.name])
-            self.tc_subproc = subprocess.Popen(shlex.split(subproc_cmd),
-                                               shell=False,
-                                               stdin=subprocess.PIPE,
-                                               stdout=self.lf_subproc,
-                                               stderr=self.lf_subproc)
-
-            self.tc_subproc.communicate(input='#close\n')
-            self.lf_subproc.close()
 
 
 class TestCaseLT1(TestCase):

@@ -1,6 +1,6 @@
 """Test case that manages Maxwell IUT"""
 
-from ptsprojects.testcase import TestCaseLT1, TestCaseLT2, TestFunc, TestFuncCleanUp
+from ptsprojects.testcase import TestCaseLT1, TestCaseLT2
 
 class BTestCase(TestCaseLT1):
     """A Bluez test case class"""
