@@ -73,10 +73,10 @@ def test_cases(pts):
     pts -- Instance of PyPTS"""
 
     test_cases = [
-        BTestCase("PBAP", "PBAP/PCE/PBD/BV-01-C"),
-        BTestCase("PBAP", "PBAP/PCE/PBF/BV-02-I"),
-        BTestCase("PBAP", "PBAP/PCE/PDF/BV-01-I"),
-        BTestCase("PBAP", "PBAP/PCE/SSM/BV-01-C"),
+        # BTestCase("PBAP", "PBAP/PCE/PBD/BV-01-C"),
+        # BTestCase("PBAP", "PBAP/PCE/PBF/BV-02-I"),
+        # BTestCase("PBAP", "PBAP/PCE/PDF/BV-01-I"),
+        # BTestCase("PBAP", "PBAP/PCE/SSM/BV-01-C"),
         BTestCase("PBAP", "PBAP/PCE/SSM/BV-02-C"),
         BTestCase("PBAP", "PBAP/PCE/SSM/BV-06-C"),
     ]

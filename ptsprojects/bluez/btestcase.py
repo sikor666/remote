@@ -15,10 +15,9 @@
 
 """Test case that manages Zephyr IUT"""
 
-from ptsprojects.testcase import TestCaseLT1, TestCaseLT2, TestFunc, \
-    TestFuncCleanUp
+from ptsprojects.testcase import TestCaseLT1, TestCaseLT2, TestFunc, TestFuncCleanUp
 from ptsprojects.stack import get_stack
-from ptsprojects.bluez.iutctl import get_iut
+# from ptsprojects.bluez.iutctl import get_iut
 
 class BTestCase(TestCaseLT1):
     """A Bluez test case class"""
@@ -26,19 +25,18 @@ class BTestCase(TestCaseLT1):
     def __init__(self, *args, **kwargs):
         """Refer to TestCase.__init__ for parameters and their documentation"""
 
-        super(BTestCase, self).__init__(*args, ptsproject_name="bluez",
-                                        **kwargs)
+        super(BTestCase, self).__init__(*args, ptsproject_name="bluez", **kwargs)
 
         self.stack = get_stack()
-        self.bluezctrl = get_iut()
+        # self.bluezctrl = get_iut()
 
         # first command is to start bluez btpclient
-        self.cmds.insert(0, TestFunc(self.bluezctrl.start))
-        self.cmds.insert(1, TestFunc(self.bluezctrl.wait_iut_ready_event))
+        # self.cmds.insert(0, TestFunc(self.bluezctrl.start))
+        # self.cmds.insert(1, TestFunc(self.bluezctrl.wait_iut_ready_event))
 
         self.cmds.append(TestFuncCleanUp(self.stack.cleanup))
         # last command is to stop bluez btpclient
-        self.cmds.append(TestFuncCleanUp(self.bluezctrl.stop))
+        # self.cmds.append(TestFuncCleanUp(self.bluezctrl.stop))
 
 
 class BTestCaseSlave(TestCaseLT2):
@@ -47,6 +45,4 @@ class BTestCaseSlave(TestCaseLT2):
     def __init__(self, *args, **kwargs):
         """ Refer to TestCase.__init__ for parameters and their documentation"""
 
-        super(BTestCaseSlave, self).__init__(*args,
-                                             ptsproject_name="bluez",
-                                             **kwargs)
+        super(BTestCaseSlave, self).__init__(*args, ptsproject_name="bluez", **kwargs)

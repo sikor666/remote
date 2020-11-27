@@ -9,8 +9,8 @@ from distutils.spawn import find_executable
 import autoptsclient_common as autoptsclient
 import ptsprojects.bluez as autoprojects
 import ptsprojects.stack as stack
-from pybtp import btp
-from ptsprojects.bluez.iutctl import get_iut
+# from pybtp import btp
+# from ptsprojects.bluez.iutctl import get_iut
 
 
 def parse_args():
@@ -18,7 +18,7 @@ def parse_args():
 
     arg_parser = autoptsclient.CliParser(description="PTS automation client")
 
-    arg_parser.add_argument("btpclient_path", help="Path to Bluez tool btpclient")
+    # arg_parser.add_argument("btpclient_path", help="Path to Bluez tool btpclient")
 
     # IUT specific arguments below
 
@@ -36,10 +36,10 @@ def main():
 
     ptses = autoptsclient.init_pts(args)
 
-    btp.init(get_iut)
+    # btp.init(get_iut)
 
-    autoprojects.iutctl.AUTO_PTS_LOCAL = autoptsclient.AUTO_PTS_LOCAL
-    autoprojects.iutctl.init(args.btpclient_path)
+    # autoprojects.iutctl.AUTO_PTS_LOCAL = autoptsclient.AUTO_PTS_LOCAL
+    # autoprojects.iutctl.init(args.btpclient_path)
 
     stack.init_stack()
     stack_inst = stack.get_stack()
@@ -56,7 +56,7 @@ def main():
 
     autoptsclient.run_test_cases(ptses, test_cases, args)
 
-    autoprojects.iutctl.cleanup()
+    # autoprojects.iutctl.cleanup()
 
     print "\nBye!"
     sys.stdout.flush()
