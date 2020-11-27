@@ -1,18 +1,3 @@
-#
-# auto-pts - The Bluetooth PTS Automation Framework
-#
-# Copyright (c) 2017, Intel Corporation.
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms and conditions of the GNU General Public License,
-# version 2, as published by the Free Software Foundation.
-#
-# This program is distributed in the hope it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-# more details.
-#
-
 """PTS test case python implementation"""
 
 import shlex
@@ -26,8 +11,6 @@ from threading import Thread
 import Queue
 import datetime
 import errno
-
-# from utils import exec_iut_cmd
 import ptstypes
 
 log = logging.debug
@@ -149,34 +132,14 @@ class PTSCallback(object):
         """
         raise AbstractMethodException()
 
-    def on_implicit_send(self, project_name, wid, test_case_name, description,
-                         style):
-        """Implements:
-
-        interface IPTSImplicitSendCallbackEx : IUnknown {
-        HRESULT _stdcall OnImplicitSend(
-                    [in] LPWSTR pszProjectName,
-                    [in] unsigned short wID,
-                    [in] LPWSTR pszTestCase,
-                    [in] LPWSTR pszDescription,
-                    [in] unsigned long style,
-                    [in, out] LPWSTR pszResponse,
-                    [in] unsigned long responseSize,
-                    [in, out] long* pbResponseIsPresent);
-        };
-
-        return -- response as a python string
-        """
-        raise AbstractMethodException()
-
 
 class TestCase(PTSCallback):
     """A PTS test case"""
 
     def copy(self):
         """Copy constructor"""
-        return TestCase(self.project_name, self.name, self.cmds,
-                        self.ptsproject_name, self.log_filename, self.log_dir)
+        return TestCase(self.project_name, self.name, self.ptsproject_name,
+                        self.log_filename, self.log_dir)
 
     def __init__(self, project_name, test_case_name,
                  ptsproject_name=None, log_filename=None, log_dir=None):
@@ -264,23 +227,3 @@ class TestCaseLT1(TestCase):
 
 class TestCaseLT2(TestCase):
     pass
-
-
-def get_max_test_case_desc(test_cases):
-    """Takes a list of test cases and return a tuple of longest project name
-    and test case name."""
-
-    max_project_name = 0
-    max_test_case_name = 0
-
-    for test_case in test_cases:
-        project_name_len = len(test_case.project_name)
-        test_case_name_len = len(test_case.name)
-
-        if project_name_len > max_project_name:
-            max_project_name = project_name_len
-
-        if test_case_name_len > max_test_case_name:
-            max_test_case_name = test_case_name_len
-
-    return (max_project_name, max_test_case_name)

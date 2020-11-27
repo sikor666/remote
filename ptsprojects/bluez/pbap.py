@@ -49,8 +49,7 @@ def set_pixits(pts):
 
 
 def test_cases(pts):
-    """Returns a list of PBAP test cases
-    pts -- Instance of PyPTS"""
+    """Returns a list of PBAP test cases pts -- Instance of PyPTS"""
 
     test_cases = [
         # BTestCase("PBAP", "PBAP/PCE/PBD/BV-01-C"),
@@ -72,9 +71,6 @@ def main():
     for test_case in test_cases_:
         print
         print test_case
-
-        for index, cmd in enumerate(test_case.cmds):
-            print "%d) %s" % (index, cmd)
 
 
 if __name__ == "__main__":

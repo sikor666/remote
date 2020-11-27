@@ -1,20 +1,5 @@
 #!/usr/bin/env python
 
-#
-# auto-pts - The Bluetooth PTS Automation Framework
-#
-# Copyright (c) 2017, Intel Corporation.
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms and conditions of the GNU General Public License,
-# version 2, as published by the Free Software Foundation.
-#
-# This program is distributed in the hope it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-# more details.
-#
-
 """Common code for the auto PTS clients"""
 
 import os
@@ -135,80 +120,6 @@ class ClientCallback(PTSCallback):
 
             # exit does not work, cause app is blocked in PTS.RunTestCase?
             sys.exit("Exception in Log")
-
-    def on_implicit_send(self, project_name, wid, test_case_name, description,
-                         style):
-        """Implements:
-
-        interface IPTSImplicitSendCallbackEx : IUnknown {
-        HRESULT _stdcall OnImplicitSend(
-                    [in] LPWSTR pszProjectName,
-                    [in] unsigned short wID,
-                    [in] LPWSTR pszTestCase,
-                    [in] LPWSTR pszDescription,
-                    [in] unsigned long style,
-                    [in, out] LPWSTR pszResponse,
-                    [in] unsigned long responseSize,
-                    [in, out] long* pbResponseIsPresent);
-        };
-        """
-
-        logger = logging.getLogger("{}.{}".format(
-            self.__class__.__name__, self.on_implicit_send.__name__))
-
-        log = logger.info
-
-        log("*" * 20)
-        log("BEGIN OnImplicitSend:")
-        log("project_name: %s" % project_name)
-        log("wid: %s" % wid)
-        log("test_case_name: %s" % test_case_name)
-        log("description: %s" % description)
-        log("style: %s 0x%x", ptstypes.MMI_STYLE_STRING[style], style)
-
-        try:
-            # XXX: 361 WID MESH sends tc name with leading white spaces
-            test_case_name = test_case_name.lstrip()
-
-            log("Calling test cases on_implicit_send")
-            caller_pts_id = RUNNING_TEST_CASE.keys().index(test_case_name)
-
-            testcase_response \
-                = RUNNING_TEST_CASE[test_case_name].on_implicit_send(
-                    project_name,
-                    wid,
-                    test_case_name,
-                    description,
-                    style)
-
-            log("test case returned on_implicit_send, response: %s",
-                testcase_response)
-
-        except Exception as e:
-            logging.exception("OnImplicitSend caught exception")
-            self.exception.put(sys.exc_info()[1])
-
-            # exit does not work, cause app is blocked in PTS.RunTestCase?
-            sys.exit("Exception in OnImplicitSend")
-
-        log("END OnImplicitSend:")
-        log("*" * 20)
-
-        return testcase_response
-
-    def get_pending_response(self, test_case_name):
-        log("%s.%s, %s", self.__class__.__name__,
-            self.get_pending_response.__name__, test_case_name)
-        if not self._pending_responses:
-            return None
-
-        rsp = self._pending_responses.pop(test_case_name, None)
-        if not rsp:
-            return rsp
-
-        if rsp["delay"]:
-            time.sleep(rsp["delay"])
-        return rsp["value"]
 
     def set_pending_response(self, pending_response):
         tc_name = pending_response[0]
