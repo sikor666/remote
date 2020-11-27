@@ -1,14 +1,14 @@
 """PBAP test cases"""
 
 try:
-    from ptsprojects.testcase import TestCase, TestCmd, TestFunc, TestFuncCleanUp
+    from ptsprojects.testcase import TestCase, TestFunc, TestFuncCleanUp
     from ptsprojects.bluez.btestcase import BTestCase
 
 except ImportError:  # running this module as script
     import sys
     sys.path.append("../..")  # to be able to locate the following imports
 
-    from ptsprojects.testcase import TestCase, TestCmd, TestFunc, TestFuncCleanUp
+    from ptsprojects.testcase import TestCase, TestFunc, TestFuncCleanUp
     from ptsprojects.bluez.btestcase import BTestCase
 
 from time import sleep

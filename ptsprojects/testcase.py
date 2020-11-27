@@ -27,7 +27,7 @@ import Queue
 import datetime
 import errno
 
-from utils import exec_iut_cmd
+# from utils import exec_iut_cmd
 import ptstypes
 
 log = logging.debug
@@ -125,46 +125,6 @@ class MmiParser(object):
 MMI = MmiParser()
 
 
-class TestCmd:
-    """A command ran in IUT during test case execution"""
-
-    def __init__(self, command, start_wid=None, stop_wid=None):
-        """Constructor
-
-        stop_wid -- some test cases require the child process (this test
-                    command) to be termintated (Ctrl-C on terminal) in response
-                    to dialog with this wid
-
-        """
-        self.command = command
-        self.start_wid = start_wid
-        self.stop_wid = stop_wid
-        self.process = None
-        self.__started = False
-
-    def start(self):
-        """Starts the command"""
-        if self.__started:
-            return
-
-        self.__started = True
-
-        log("starting child process %s" % self)
-        self.process = exec_iut_cmd(self.command)
-
-    def stop(self):
-        """Stops the command"""
-        if not self.__started:
-            return
-
-        log("stopping child process %s" % self)
-        self.process.kill()
-
-    def __str__(self):
-        """Returns string representation"""
-        return "%s %s %s" % (self.command, self.start_wid, self.stop_wid)
-
-
 class TestFunc:
     """A wrapper around test functions"""
 
@@ -181,7 +141,7 @@ class TestFunc:
         start_wid -- wid to start TestFunc
 
         stop_wid -- not used by TestFunc, because function stopping is not easy
-                    to implement. Provided only for compatibility with TestCmd.
+                    to implement.
 
         post_wid -- start TestFunc on the next MMI after MMI with this wid
 
@@ -219,9 +179,7 @@ class TestFunc:
         These attributes are used by this class and not passed to the func,
         hence they are removed from kwds.
 
-        Note: with test functions stop_wid is only there to be compatible with
-        TestCmd interface. But since functions cannot be stopped, stop_wid is
-        useless.
+        Note: since functions cannot be stopped, stop_wid is useless.
 
         kwds -- arbitrary keyword argument dictionary
 
@@ -339,7 +297,7 @@ class TestCase(PTSCallback):
                  generic_wid_hdl=None, log_filename=None, log_dir=None):
         """TestCase constructor
 
-        cmds -- a list of TestCmd and TestFunc or single instance of them
+        cmds -- a list of TestFunc or single instance of them
 
         no_wid -- a wid (tag) to respond No to
 
