@@ -1,14 +1,7 @@
 """PTS test case python implementation"""
 
-import shlex
 import os
-import subprocess
-import re
-import sys
-import time
 import logging
-from threading import Thread
-import Queue
 import datetime
 import errno
 import ptstypes
@@ -59,7 +52,6 @@ class TestCase(PTSCallback):
         self.status = "init"
         self.state = None
 
-        self.thread_exception = Queue.Queue()
         self.ptsproject_name = ptsproject_name
         self.log_filename = log_filename
         self.log_dir = log_dir

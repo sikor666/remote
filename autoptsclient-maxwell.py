@@ -14,11 +14,7 @@ def parse_args():
 
     arg_parser = autoptsclient.CliParser(description="PTS automation client")
 
-    # IUT specific arguments below
-
-    args = arg_parser.parse_args()
-
-    return args
+    return arg_parser.parse_args()
 
 
 def main():

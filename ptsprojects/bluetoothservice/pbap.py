@@ -1,19 +1,8 @@
 """PBAP test cases"""
 
-try:
-    from ptsprojects.testcase import TestCase
-    from ptsprojects.bluetoothservice.btestcase import BTestCase
+from ptsprojects.testcase import TestCase
+from ptsprojects.bluetoothservice.btestcase import BTestCase
 
-except ImportError:  # running this module as script
-    import sys
-    sys.path.append("../..")  # to be able to locate the following imports
-
-    from ptsprojects.testcase import TestCase
-    from ptsprojects.bluetoothservice.btestcase import BTestCase
-
-from time import sleep
-import binascii
-import re
 
 def set_pixits(pts):
     """Setup PBAP profile PIXITS for workspace. Those values are used for test

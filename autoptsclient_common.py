@@ -5,8 +5,6 @@
 import os
 import errno
 import sys
-import random
-import socket
 import logging
 import xmlrpclib
 import Queue
