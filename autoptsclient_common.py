@@ -34,7 +34,6 @@ import argparse
 from termcolor import colored
 
 from ptsprojects.testcase import PTSCallback, TestCaseLT1, TestCaseLT2
-from ptsprojects.testcase_db import TestCaseTable
 import ptsprojects.ptstypes as ptstypes
 from config import SERVER_PORT, CLIENT_PORT
 
@@ -44,7 +43,6 @@ import xml.etree.ElementTree as ET
 log = logging.debug
 
 RUNNING_TEST_CASE = {}
-TEST_CASE_DB = None
 
 # To test autopts client locally:
 # Envrinment variable AUTO_PTS_LOCAL must be set for FakeProxy to
@@ -408,7 +406,7 @@ def init_pts_thread_entry(proxy, local_address, local_port, workspace_path,
     proxy.enable_maximum_logging(enable_max_logs)
 
 
-def init_pts(args, tc_db_table_name=None):
+def init_pts(args):
     """Initialization procedure for PTS instances"""
 
     proxy_list = []
@@ -438,10 +436,6 @@ def init_pts(args, tc_db_table_name=None):
         proxy_list.append(proxy)
         thread_list.append(thread)
 
-    if tc_db_table_name:
-        global TEST_CASE_DB
-        TEST_CASE_DB = TestCaseTable(tc_db_table_name)
-
     for index, thread in enumerate(thread_list):
         thread.join(timeout=180.0)
 
@@ -464,7 +458,7 @@ def get_result_color(status):
 
 
 class TestCaseRunStats(object):
-    def __init__(self, projects, test_cases, retry_count, db=None):
+    def __init__(self, projects, test_cases, retry_count):
 
         self.run_count_max = retry_count + 1  # Run test at least once
         self.run_count = 0  # Run count of current test case
@@ -480,19 +474,6 @@ class TestCaseRunStats(object):
         tree = ET.ElementTree(root)
         tree.write(self.xml_results)
 
-        self.db = db
-
-        if self.db:
-            self.est_duration = db.estimate_session_duration(test_cases,
-                                                             self.run_count_max)
-            if self.est_duration:
-                approx = str(datetime.timedelta(seconds=self.est_duration))
-
-                print("Number of test cases to run: '%d' in approximately: "
-                      "'%s'\n" % (self.num_test_cases, approx))
-        else:
-            self.est_duration = 0
-
     def update(self, test_case_name, duration, status):
         tree = ET.parse(self.xml_results)
         root = tree.getroot()
@@ -501,34 +482,19 @@ class TestCaseRunStats(object):
         if elem is None:
             elem = ET.SubElement(root, 'test_case')
 
-            status_previous = None
-            if self.db:
-                status_previous = self.db.get_result(test_case_name)
-
             elem.attrib["project"] = test_case_name.split('/')[0]
             elem.attrib["name"] = test_case_name
             elem.attrib["duration"] = str(duration)
             elem.attrib["status"] = ""
-            elem.attrib["status_previous"] = str(status_previous)
 
             run_count = 0
         else:
             run_count = int(elem.attrib["run_count"])
 
         elem.attrib["status"] = status
-
-        if elem.attrib["status"] != "PASS" and \
-                        elem.attrib["status_previous"] == "PASS":
-            regression = True
-        else:
-            regression = False
-
-        elem.attrib["regression"] = str(regression)
         elem.attrib["run_count"] = str(run_count + 1)
 
         tree.write(self.xml_results)
-
-        return regression
 
     def get_results(self):
         tree = ET.parse(self.xml_results)
@@ -541,13 +507,6 @@ class TestCaseRunStats(object):
                 tc_xml.attrib["status"]
 
         return results
-
-    def get_regressions(self):
-        tree = ET.parse(self.xml_results)
-        root = tree.getroot()
-        tcs_xml = root.findall("./test_case[@regression='True']")
-
-        return [tc_xml.attrib["name"] for tc_xml in tcs_xml]
 
     def get_status_count(self):
         tree = ET.parse(self.xml_results)
@@ -571,10 +530,6 @@ class TestCaseRunStats(object):
         status_str_len = len(status_str)
         count_str_len = len("Count")
         total_str_len = len("Total")
-        regressions_str = "Regressions"
-        regressions_str_len = len(regressions_str)
-        regressions_count = len(self.get_regressions())
-        regressions_count_str_len = len(str(regressions_count))
         num_test_cases_str = str(self.num_test_cases)
         num_test_cases_str_len = len(num_test_cases_str)
         status_count = self.get_status_count()
@@ -584,10 +539,6 @@ class TestCaseRunStats(object):
 
         title_str = ''
         border = ''
-
-        if regressions_count != 0:
-            status_just = max(status_just, regressions_str_len)
-            count_just = max(count_just, regressions_count_str_len)
 
         for status, count in status_count.items():
             status_just = max(status_just, len(status))
@@ -608,12 +559,6 @@ class TestCaseRunStats(object):
         # print total
         print border
         print "Total".ljust(status_just) + num_test_cases_str.rjust(count_just)
-
-        if regressions_count != 0:
-            print border
-
-        print(regressions_str.ljust(status_just) +
-              str(regressions_count).rjust(count_just))
 
 
 def run_test_case_wrapper(func):
@@ -641,7 +586,7 @@ def run_test_case_wrapper(func):
         status = func(*args)
         end_time = time.time() - start_time
 
-        regression = stats.update(test_case_name, end_time, status)
+        stats.update(test_case_name, end_time, status)
 
         retries_max = run_count_max - 1
         if run_count:
@@ -649,18 +594,12 @@ def run_test_case_wrapper(func):
         else:
             retries_msg = ""
 
-        if regression and run_count == retries_max:
-            regression_msg = "REGRESSION"
-        else:
-            regression_msg = ""
-
         end_time_str = str(round(datetime.timedelta(
             seconds=end_time).total_seconds(), 3))
 
         result = ("{}".format(status).ljust(16) +
                   end_time_str.rjust(len(end_time_str)) +
-                retries_msg.rjust(len("#{}".format(retries_max)) + margin) +
-                regression_msg.rjust(len("REGRESSION") + margin))
+                retries_msg.rjust(len("#{}".format(retries_max)) + margin))
 
         if sys.stdout.isatty():
             output_color = get_result_color(status)
@@ -868,7 +807,7 @@ def run_test_cases(ptses, test_case_instances, args):
         test_cases += [tc for tc in _test_case_list if run_or_not(tc)]
 
     # Statistics
-    stats = TestCaseRunStats(projects, test_cases, args.retry, TEST_CASE_DB)
+    stats = TestCaseRunStats(projects, test_cases, args.retry)
 
     for test_case in test_cases:
         stats.run_count = 0
@@ -878,9 +817,6 @@ def run_test_cases(ptses, test_case_instances, args):
                                              test_case, stats, session_log_dir)
 
             if status == 'PASS' or stats.run_count == args.retry:
-                if TEST_CASE_DB:
-                    TEST_CASE_DB.update_statistics(test_case, duration, status)
-
                 break
 
             stats.run_count += 1
@@ -889,7 +825,7 @@ def run_test_cases(ptses, test_case_instances, args):
 
     stats.print_summary()
 
-    return stats.get_status_count(), stats.get_results(), stats.get_regressions()
+    return stats.get_status_count(), stats.get_results()
 
 
 class CliParser(argparse.ArgumentParser):
