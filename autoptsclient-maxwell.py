@@ -4,21 +4,15 @@
 
 import os
 import sys
-# from distutils.spawn import find_executable
 
 import autoptsclient_common as autoptsclient
 import ptsprojects.bluez as autoprojects
-# import ptsprojects.stack as stack
-# from pybtp import btp
-# from ptsprojects.bluez.iutctl import get_iut
 
 
 def parse_args():
     """Parses command line arguments and options"""
 
     arg_parser = autoptsclient.CliParser(description="PTS automation client")
-
-    # arg_parser.add_argument("btpclient_path", help="Path to Bluez tool btpclient")
 
     # IUT specific arguments below
 
@@ -36,17 +30,6 @@ def main():
 
     ptses = autoptsclient.init_pts(args)
 
-    # btp.init(get_iut)
-
-    # autoprojects.iutctl.AUTO_PTS_LOCAL = autoptsclient.AUTO_PTS_LOCAL
-    # autoprojects.iutctl.init(args.btpclient_path)
-
-    # stack.init_stack()
-    # stack_inst = stack.get_stack()
-    # stack_inst.synch_init([pts.callback_thread for pts in ptses])
-
-    # autoprojects.gap.set_pixits(ptses[0])
-    # autoprojects.sm.set_pixits(ptses[0])
     autoprojects.pbap.set_pixits(ptses[0])
 
     # test_cases = autoprojects.gap.test_cases(ptses[0])
@@ -55,8 +38,6 @@ def main():
     test_cases = autoprojects.pbap.test_cases(ptses[0])
 
     autoptsclient.run_test_cases(ptses, test_cases, args)
-
-    # autoprojects.iutctl.cleanup()
 
     print "\nBye!"
     sys.stdout.flush()

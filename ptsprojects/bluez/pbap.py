@@ -1,39 +1,19 @@
-#
-# auto-pts - The Bluetooth PTS Automation Framework
-#
-# Copyright (c) 2017, Intel Corporation.
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms and conditions of the GNU General Public License,
-# version 2, as published by the Free Software Foundation.
-#
-# This program is distributed in the hope it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-# more details.
-#
-
 """PBAP test cases"""
 
 try:
-    from ptsprojects.testcase import TestCase, TestCmd, TestFunc, \
-        TestFuncCleanUp
+    from ptsprojects.testcase import TestCase, TestCmd, TestFunc, TestFuncCleanUp
     from ptsprojects.bluez.btestcase import BTestCase
 
 except ImportError:  # running this module as script
     import sys
     sys.path.append("../..")  # to be able to locate the following imports
 
-    from ptsprojects.testcase import TestCase, TestCmd, TestFunc, \
-        TestFuncCleanUp
+    from ptsprojects.testcase import TestCase, TestCmd, TestFunc, TestFuncCleanUp
     from ptsprojects.bluez.btestcase import BTestCase
 
 from time import sleep
-from pybtp import btp
-from pybtp.types import Addr, IOCap, UUID, Prop, Perm, AdType, AdFlags
 import binascii
 import re
-from ptsprojects.stack import get_stack
 
 def set_pixits(pts):
     """Setup PBAP profile PIXITS for workspace. Those values are used for test
@@ -86,9 +66,6 @@ def test_cases(pts):
 
 def main():
     """Main."""
-    import ptsprojects.zephyr.iutctl as iutctl
-
-    iutctl.init_stub()
 
     test_cases_ = test_cases("AB:CD:EF:12:34:56")
 
