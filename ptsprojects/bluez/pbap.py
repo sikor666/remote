@@ -13,7 +13,7 @@
 # more details.
 #
 
-"""GAP test cases"""
+"""PBAP test cases"""
 
 try:
     from ptsprojects.testcase import TestCase, TestCmd, TestFunc, \
@@ -93,8 +93,8 @@ def set_pixits(pts):
     ad_pixit = ad_str_manufacturer_data_len + ad_str_manufacturer_data
 
     # Set GAP common PIXIT values
-    pts.set_pixit("GAP", "TSPX_bd_addr_iut", "DCA6325160A6")
-    pts.set_pixit("GAP", "TSPX_bd_addr_PTS", "001BDCF22060")
+    pts.set_pixit("GAP", "TSPX_bd_addr_iut", "DEADBEEFDEAD")
+    pts.set_pixit("GAP", "TSPX_bd_addr_PTS", "C000DEADBEEF")
     pts.set_pixit("GAP", "TSPX_broadcaster_class_of_device", "100104")
     pts.set_pixit("GAP", "TSPX_observer_class_of_device", "100104")
     pts.set_pixit("GAP", "TSPX_peripheral_class_of_device", "100104")

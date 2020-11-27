@@ -43,7 +43,7 @@ def set_pixits(pts):
 
     pts -- Instance of PyPTS"""
 
-    pts.set_pixit("SM", "TSPX_bd_addr_iut", "DEADBEEFDEAD")
+    pts.set_pixit("SM", "TSPX_bd_addr_iut", "DCA6325160A6")
     pts.set_pixit("SM", "TSPX_SMP_pin_code", "111111")
     pts.set_pixit("SM", "TSPX_OOB_Data", "0000000000000000FE12036E5A889F4D")
     pts.set_pixit("SM", "TSPX_peer_addr_type", "00")
