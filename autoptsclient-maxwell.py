@@ -35,7 +35,7 @@ def main():
 
     autoptsclient.run_test_cases(ptses, test_cases, args)
 
-    print "\nBye!"
+    print("\nBye!")
     sys.stdout.flush()
 
     for pts in ptses:

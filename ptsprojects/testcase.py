@@ -4,7 +4,7 @@ import os
 import logging
 import datetime
 import errno
-import ptstypes
+from . import ptstypes
 
 log = logging.debug
 

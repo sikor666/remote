@@ -58,8 +58,8 @@ def main():
     test_cases_ = test_cases("AB:CD:EF:12:34:56")
 
     for test_case in test_cases_:
-        print
-        print test_case
+        print()
+        print(test_case)
 
 
 if __name__ == "__main__":

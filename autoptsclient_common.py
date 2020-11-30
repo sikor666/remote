@@ -6,11 +6,11 @@ import os
 import errno
 import sys
 import logging
-import xmlrpclib
-import Queue
+import xmlrpc.client
+import queue
 import threading
 from traceback import format_exception
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from xmlrpc.server import SimpleXMLRPCServer
 import time
 import datetime
 import argparse
@@ -54,12 +54,12 @@ class _Method:
     __str__ = __repr__
 
 
-xmlrpclib._Method = _Method
+xmlrpc.client._Method = _Method
 
 
 class ClientCallback(PTSCallback):
     def __init__(self):
-        self.exception = Queue.Queue()
+        self.exception = queue.Queue()
         self._pending_responses = {}
 
     def error_code(self):
@@ -74,7 +74,7 @@ class ClientCallback(PTSCallback):
 
         try:
             exc = self.exception.get_nowait()
-        except Queue.Empty:
+        except queue.Empty:
             pass
         else:
             error_code = get_error_code(exc)
@@ -269,7 +269,7 @@ def init_pts_thread_entry(proxy, local_address, local_port, workspace_path,
 
     sys.stdout.flush()
     proxy.restart_pts()
-    print "(%r) OK" % (id(proxy),)
+    print("(%r) OK" % (id(proxy),))
 
     proxy.callback_thread = CallbackThread(local_port)
     proxy.callback_thread.start()
@@ -317,11 +317,11 @@ def init_pts(args):
         if AUTO_PTS_LOCAL:
             proxy = FakeProxy()
         else:
-            proxy = xmlrpclib.ServerProxy(
+            proxy = xmlrpc.client.ServerProxy(
                 "http://{}:{}/".format(server_addr, SERVER_PORT),
                 allow_none=True,)
 
-        print "(%r) Starting PTS %s ..." % (id(proxy), server_addr)
+        print("(%r) Starting PTS %s ..." % (id(proxy), server_addr))
 
         thread = threading.Thread(target=init_pts_thread_entry,
                                   args=(proxy, local_addr, local_port, args.workspace,
@@ -421,7 +421,7 @@ class TestCaseRunStats(object):
 
     def print_summary(self):
         """Prints test case list status summary"""
-        print "\nSummary:\n"
+        print("\nSummary:\n")
 
         status_str = "Status"
         status_str_len = len(status_str)
@@ -437,7 +437,7 @@ class TestCaseRunStats(object):
         title_str = ''
         border = ''
 
-        for status, count in status_count.items():
+        for status, count in list(status_count.items()):
             status_just = max(status_just, len(status))
             count_just = max(count_just, len(str(count)))
 
@@ -445,17 +445,17 @@ class TestCaseRunStats(object):
             title_str = status_str.ljust(status_just) + "Count".rjust(count_just)
             border = "=" * (status_just + count_just)
 
-        print title_str
-        print border
+        print(title_str)
+        print(border)
 
         # print each status and count
         for status in sorted(status_count.keys()):
             count = status_count[status]
-            print status.ljust(status_just) + str(count).rjust(count_just)
+            print(status.ljust(status_just) + str(count).rjust(count_just))
 
         # print total
-        print border
-        print "Total".ljust(status_just) + num_test_cases_str.rjust(count_just)
+        print(border)
+        print("Total".ljust(status_just) + num_test_cases_str.rjust(count_just))
 
 
 def run_test_case_wrapper(func):
@@ -472,11 +472,11 @@ def run_test_case_wrapper(func):
         margin = stats.margin
         index = stats.index
 
-        print (str(index + 1).rjust(num_test_cases_width) +
+        print((str(index + 1).rjust(num_test_cases_width) +
                "/" +
                str(num_test_cases).ljust(num_test_cases_width + margin) +
                test_case_name.split('/')[0].ljust(max_project_name + margin) +
-               test_case_name.ljust(max_test_case_name + margin - 1)),
+               test_case_name.ljust(max_test_case_name + margin - 1)), end=' ')
         sys.stdout.flush()
 
         start_time = time.time()
@@ -500,7 +500,7 @@ def run_test_case_wrapper(func):
 
         if sys.stdout.isatty():
             output_color = get_result_color(status)
-            print(colored((result), output_color))
+            print(colored(result, output_color))
         else:
             print(result)
 
@@ -513,7 +513,7 @@ def get_error_code(exc):
     """Return string error code for argument exception"""
     error_code = None
 
-    if isinstance(exc, xmlrpclib.Fault):
+    if isinstance(exc, xmlrpc.client.Fault):
         error_code = ptstypes.E_XML_RPC_ERROR
 
     elif error_code is None:
@@ -560,7 +560,7 @@ def run_test_case_thread_entry(pts, test_case):
             error_code = thread_error
 
     except Exception as error:
-        logging.exception(error.message)
+        logging.exception(error)
         error_code = get_error_code(error)
 
     except BaseException:
